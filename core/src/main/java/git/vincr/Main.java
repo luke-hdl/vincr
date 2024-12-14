@@ -48,7 +48,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void render() {
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        ScreenUtils.clear(1f, 1f, 1f, 1f);
         batch.begin();
         batch.draw(currentScreen, 0, 0);
         batch.draw(button, 10, 10);
