@@ -25,6 +25,9 @@ public class Main extends ApplicationAdapter {
     private Texture failScreen;
 
     private Texture currentScreen;
+    private Texture namesDoNotMatchScreen;
+    private Texture notANumberScreen;
+    private Texture notSquareScreen;
 
     private Texture button;
     protected NativeFileChooser fileChooser;
@@ -41,6 +44,11 @@ public class Main extends ApplicationAdapter {
         helpScreen = new Texture("helppage.png");
         succeedScreen = new Texture("load_successful.png");
         failScreen = new Texture("load_unsuccessful.png");
+        namesDoNotMatchScreen = new Texture("load_unsuccessful_names_do_not_match.png");
+        notSquareScreen = new Texture("load_unsuccessful_not_square.png");
+        notANumberScreen = new Texture("load_unsuccessful_not_a_number.png");
+
+
         currentScreen = helpScreen;
         button = new Texture("loadfile.png");
         Gdx.input.setInputProcessor(new ButtonClickProcessor());
@@ -77,6 +85,12 @@ public class Main extends ApplicationAdapter {
                     FileHandle out = new FileHandle(new File(file.pathWithoutExtension() + "_out.csv"));
                     InOut.writeFile(Calculator.calculateVinc(in), out);
                     currentScreen = succeedScreen;
+                } catch (ValidationException e) {
+                    switch (e.getFail()) {
+                        case VINC_NOT_A_NUMBER -> currentScreen = notANumberScreen;
+                        case NAMES_DO_NOT_MATCH -> currentScreen = namesDoNotMatchScreen;
+                        case SPREADSHEET_NOT_SQUARE -> currentScreen = notSquareScreen;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     currentScreen = failScreen;
@@ -87,12 +101,14 @@ public class Main extends ApplicationAdapter {
 
             @Override
             public void onCancellation() {
+                lookingForFile = false;
             }
 
             @Override
             public void onError(Exception exception) {
                 exception.printStackTrace();
                 currentScreen = failScreen;
+                lookingForFile = false;
             }
         });
     }
