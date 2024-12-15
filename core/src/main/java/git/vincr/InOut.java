@@ -7,11 +7,24 @@ import java.util.Map;
 
 public class InOut {
 
-    public static Map<String, Map<String, Integer>> loadFile(FileHandle aFile) {
+    public static Map<String, Map<String, Integer>> loadFile(FileHandle aFile) throws ValidationException {
         String contents = aFile.readString();
+
         Map<String, Map<String, Integer>> results = new HashMap<>();
         String[] split = contents.split("[\r\n]{1,100}");
         String[] firstLine = split[0].split(",");
+
+
+        if (firstLine.length != split.length) {
+            throw new ValidationException(ValidationException.FailureCase.SPREADSHEET_NOT_SQUARE);
+        }
+
+        for (int i = 1; i < firstLine.length; i++) {
+            if (!firstLine[i].equals(split[i].split(",")[0])) {
+                throw new ValidationException(ValidationException.FailureCase.NAMES_DO_NOT_MATCH);
+            }
+        }
+
         for (int i = 1; i < firstLine.length; i++) {
             results.put(firstLine[i], new HashMap<>());
         }
@@ -23,7 +36,11 @@ public class InOut {
                 if (i == n) {
                     results.get(forName).put(forName, -1);
                 } else {
-                    results.get(forName).put(firstLine[n], Integer.parseInt(lineSplit[n]));
+                    try {
+                        results.get(forName).put(firstLine[n], Integer.parseInt(lineSplit[n]));
+                    } catch (NumberFormatException e) {
+                        throw new ValidationException(ValidationException.FailureCase.VINC_NOT_A_NUMBER);
+                    }
                 }
             }
         }
@@ -55,14 +72,15 @@ public class InOut {
         }
 
         aFile.writeString("", false);
-
         for (String[] line : writeMe) {
-            String asLine = "";
+            StringBuilder asLine = new StringBuilder();
             for (String value : line) {
-                asLine += value + ",";
+                asLine.append(value);
+                asLine.append(",");
             }
-            asLine = asLine.substring(0, asLine.length() - 1);
-            aFile.writeString(asLine + "\r\n", true);
+            String asString = asLine.toString();
+            asString = asString.substring(0, asString.length() - 1);
+            aFile.writeString(asString + "\r\n", true);
         }
     }
 }
